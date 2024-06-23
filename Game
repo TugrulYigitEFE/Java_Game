@@ -1,0 +1,272 @@
+import java.awt.Color;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+
+import acm.graphics.GImage;
+import acm.graphics.GLabel;
+import acm.graphics.GLine;
+import acm.graphics.GObject;
+import acm.program.GraphicsProgram;
+import acm.util.RandomGenerator;
+
+public class ProjectileMotion extends GraphicsProgram {
+
+	RandomGenerator rg = RandomGenerator.getInstance();
+	private static final int SEKER_SAYISI = 10;
+	GLabel baslik;
+	GLabel bitis;
+	GLine line;
+	GImage arkaplan;
+	GImage seker;
+	GImage[] cocukDizisi;
+	GImage sahami;
+	GImage cocuk;
+	int vurus = 0;
+	int ilkX = 0;
+	int ilkY = 0;
+	int sonX = 0;
+	int sonY = 0;
+	int hamleSayisi = 35;
+
+	public void finish() {
+		bitis = new GLabel("Game Over,Please Press G");
+
+		bitis.setColor(Color.blue);
+
+		add(bitis, 200, 100);
+		bitis.setFont("Jokerman-66");
+
+		for (int j = 0; j < 11; j++) {
+			setBackground(rg.nextColor());
+			pause(105);
+
+		}
+
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		int keyCode = e.getKeyCode();
+
+		if (keyCode == KeyEvent.VK_G) {
+
+			pause(1000);
+			System.exit(1);
+
+		}
+	}
+
+	@Override
+	public void run() {
+		setSize(1550, 800);
+
+		arkaplan = new GImage("arkaplan.jpeg");
+		add(arkaplan, 0, 0);
+		arkaplan.setSize(getWidth(), getHeight());
+		arkaplan.sendToBack();
+		addMouseListeners();
+		addKeyListeners();
+		baslikEkle();
+		cakiEkle();
+
+		for (int i = 0; i < SEKER_SAYISI; i++) {
+			baslikEkle();
+
+			sekerEkle();
+			cocukEkle();
+			waitForClick();
+			pause(1500);
+			puanYazdır();
+			moveToTheTopPoint();
+			yatayHareket();
+			yatayHareket();
+			startToDescend();
+
+			remove(seker);
+			remove(cocuk);
+			remove(baslik);
+
+		}
+		removeAll();
+		finish();
+		pause(1000);
+		puanYazdır();
+		GImage sahami = new GImage("sahami.jpg");
+		add(sahami, getWidth() / 2 + 170, getHeight() / 2 - 50);
+		sahami.scale(1.2);
+		pause(1000);
+		GImage baris = new GImage("baris.jpg");
+		add(baris, getWidth() / 2 - 700, getHeight() / 2 - 50);
+		baris.scale(2);
+		// remove(baslik);
+
+		pause(1000);
+
+		GLabel tesekkür = new GLabel("THANK YOU");
+		tesekkür.setColor(Color.magenta);
+		add(tesekkür, 300, 300);
+		tesekkür.setFont("Jokerman-76");
+
+	}
+
+	private void cakiEkle() {
+		GImage caki = new GImage("caki.png");
+		add(caki, 140, 140);
+		caki.scale(0.4);
+
+	}
+
+	private void puanYazdır() {
+		baslik = new GLabel("YOUR SCORE : " + vurus * 100);
+		baslik.setColor(Color.red);
+		add(baslik, 1200, 30);
+		baslik.setFont("TimesRoman-BOLD-36");
+
+	}
+
+	private void carpismaKontrol(double x, double y) {
+		GObject temasliImage = getElementAt(seker.getX() + seker.getLineWidth() / 2,
+				seker.getY() + seker.getHeight() / 2);
+		if (temasliImage != seker) {
+			remove(temasliImage);
+
+			vurus++;
+		}
+	}
+
+	private void cocukEkle() {
+		cocukDizisi = new GImage[5];
+		cocukDizisi[0] = new GImage("student1.png");
+		cocukDizisi[1] = new GImage("student2.jpg");
+		cocukDizisi[2] = new GImage("student3.jpg");
+		cocukDizisi[3] = new GImage("student4.jpg");
+		cocukDizisi[4] = new GImage("student5.png");
+
+		double randXLocation = rgen.nextDouble(400, 1400);
+		double randYLocation = rgen.nextDouble(200, 500);
+		int randX = rgen.nextInt(0, 4);
+		cocukDizisi[randX].scale(0.6);
+		cocuk = cocukDizisi[randX];
+		if (cocuk == cocukDizisi[0]) {
+			cocuk.scale(0.7);
+		}
+		if (cocuk == cocukDizisi[4]) {
+			cocuk.scale(1.4);
+		}
+		add(cocuk, randXLocation, randYLocation);
+
+	}
+
+	private void sekerEkle() {
+		seker = new GImage("seker.png");
+		seker.scale(0.4);
+		add(seker, 100, 350);
+
+	}
+
+	private void yatayHareket() {
+		for (int i = 0; i < hamleSayisi / 2; i++) {
+			// thrown.move(5, 1);
+			seker.move(5, 1);
+			pause(25);
+
+		}
+		carpismaKontrol(seker.getX(), seker.getY());
+
+	}
+
+	private void startToDescend() {
+		for (int i = 0; i < hamleSayisi; i++) {
+			iniseGecme(sonX, ilkY, ilkX, sonY);
+			pause(25);
+
+		}
+		carpismaKontrol(seker.getX(), seker.getY());
+		for (int i = 0; i < hamleSayisi; i++) {
+			iniseGecme(sonX, ilkY, ilkX, sonY);
+			pause(20);
+
+		}
+		carpismaKontrol(seker.getX(), seker.getY());
+		for (int i = 0; i < hamleSayisi; i++) {
+			iniseGecme(sonX, ilkY, ilkX, sonY);
+			pause(15);
+
+		}
+		carpismaKontrol(seker.getX(), seker.getY());
+	}
+
+	private void moveToTheTopPoint() {
+		for (int i = 0; i < hamleSayisi; i++) {
+			tirmanma(sonX, sonY, ilkX, ilkY);
+			pause(15);
+
+		}
+
+		for (int j = 0; j < hamleSayisi; j++) {
+			tirmanma(sonX, sonY, ilkX, ilkY);
+			pause(20);
+
+		}
+		for (int k = 0; k < hamleSayisi; k++) {
+			tirmanma(sonX, sonY, ilkX, ilkY);
+			pause(25);
+
+		}
+
+	}
+
+	private void iniseGecme(int sonX, int sonY, int ilkX, int ilkY) {
+		int iniş = -(sonY - ilkY);
+		int yatay = ilkX - sonX;
+		println("iniş" + iniş);
+		println("yatay" + yatay);
+
+		seker.move(yatay / 100, iniş / 100);
+
+		carpismaKontrol(seker.getX(), seker.getY());
+
+	}
+
+	private void tirmanma(int sonX2, int sonY2, int ilkX2, int ilkY2) {
+		int dikey = ilkY - sonY;
+		int yatay = ilkX - sonX;
+		println("dikey" + dikey);
+		println("yatay" + yatay);
+		seker.move(yatay / 100, dikey / 100);
+
+	}
+
+	private void baslikEkle() {
+		GLabel oyunAdi = new GLabel("ANGRY CANDIES");
+		oyunAdi.setFont("JuiceITC-BOLD-156");
+		add(oyunAdi, getWidth() / 2 - 370, getHeight() / 2 - 150);
+		oyunAdi.setColor(Color.orange);
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		line = new GLine(e.getX(), e.getY(), e.getX(), e.getY());
+		add(line);
+		ilkX = e.getX();
+		ilkY = e.getY();
+		println("ilk X" + ilkX + "ilkY" + ilkY);
+
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		line.setEndPoint(e.getX(), e.getY());
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		sonX = e.getX();
+		sonY = e.getY();
+		println("sonX:" + e.getX() + "\n sonY:" + e.getY());
+		remove(line);
+	}
+
+	private RandomGenerator rgen = new RandomGenerator();
+}
